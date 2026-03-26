@@ -3,26 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>大学東方合同合宿 企画ナビ - Sensitive</title>
+  <title>第n回大学東方合同合宿　自由参加企画ナビ - Sensitive</title>
   <link rel="icon" href="./iconsens.png" type="image/png">
   <style>
     :root{
-      --bg:#160d17;
-      --panel:#26192a;
-      --panel-2:#332038;
-      --text:#fff0fb;
-      --muted:#d8bdd3;
-      --accent:#ff8ccf;
-      --live:#ff9f66;
-      --soon:#ffd166;
-      --border:rgba(255,255,255,0.08);
+      --bg1:#1b101b;
+      --bg2:#2a1628;
+      --paper:#2b1829;
+      --paper-2:#3a2036;
+      --ink:#fff2fb;
+      --muted:#d7bdd2;
+      --line:#7f5a77;
+      --accent:#ff88c9;
+      --accent-soft:#4a263e;
+      --live:#ff8b64;
+      --soon:#f1bf5f;
+      --upcoming:#b58eb0;
+      --ended:#77707d;
+      --shadow:0 10px 28px rgba(0, 0, 0, 0.28);
     }
     *{box-sizing:border-box}
     body{
       margin:0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:linear-gradient(180deg, #140b16 0%, #1a1020 100%);
-      color:var(--text);
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top right, rgba(255,136,201,0.10), transparent 26%),
+        radial-gradient(circle at bottom left, rgba(241,191,95,0.08), transparent 28%),
+        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:0.08;
+      background-image:
+        linear-gradient(rgba(255,210,240,0.22) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,210,240,0.22) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.8), rgba(0,0,0,0.15));
     }
     .wrap{
       max-width:980px;
@@ -33,32 +53,40 @@
       position:sticky;
       top:0;
       backdrop-filter: blur(10px);
-      background:rgba(20,11,22,0.82);
-      border-bottom:1px solid var(--border);
+      background:rgba(37,21,36,0.78);
+      border-bottom:1px solid rgba(255,200,235,0.12);
       z-index:20;
     }
     .header-inner{
       max-width:980px;
       margin:0 auto;
-      padding:14px;
+      padding:16px 14px 14px;
     }
     h1{
-      margin:0 0 6px;
-      font-size:1.45rem;
+      margin:0;
+      font-size:1.5rem;
+      line-height:1.45;
+      letter-spacing:0.03em;
+      color:#ffe7f7;
     }
     .sub{
+      margin-top:8px;
       color:var(--muted);
-      font-size:0.95rem;
-      line-height:1.5;
+      font-size:0.97rem;
+      line-height:1.7;
+      border-left:4px solid rgba(255,136,201,0.45);
+      padding-left:10px;
     }
     .clock{
-      margin-top:8px;
+      margin-top:10px;
       font-weight:700;
+      color:#f2d6eb;
+      font-size:0.95rem;
     }
     .back{
       display:inline-block;
       margin-top:10px;
-      color:var(--muted);
+      color:#f0d5ea;
       text-decoration:none;
       font-size:0.9rem;
     }
@@ -73,40 +101,62 @@
     }
     input, select{
       width:100%;
-      border:1px solid var(--border);
-      background:var(--panel);
-      color:var(--text);
+      border:1px solid rgba(255,210,240,0.16);
+      background:rgba(255,255,255,0.08);
+      color:var(--ink);
       padding:12px 14px;
-      border-radius:12px;
+      border-radius:14px;
       font-size:0.95rem;
+      font-family: inherit;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
     }
-    section{margin-top:22px;}
+    input::placeholder{
+      color:#ccb2c8;
+    }
+    section{margin-top:24px;}
     .section-title{
       display:flex;
       align-items:center;
       gap:10px;
       margin:0 0 12px;
-      font-size:1.05rem;
+      font-size:1.08rem;
+      color:#ffe7f7;
     }
     .badge{
       display:inline-block;
       padding:4px 10px;
       border-radius:999px;
-      font-size:0.8rem;
+      font-size:0.78rem;
       font-weight:700;
-      color:#2b1023;
-      background:var(--accent);
+      color:#311526;
+      background:linear-gradient(180deg, #ff9bd2 0%, #e56ab2 100%);
+      box-shadow:0 4px 10px rgba(229,106,178,0.18);
     }
     .list{
       display:grid;
-      gap:12px;
+      gap:14px;
     }
     .card{
-      background:linear-gradient(180deg, var(--panel), var(--panel-2));
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:14px;
-      box-shadow:0 8px 28px rgba(0,0,0,0.18);
+      position:relative;
+      background:
+        linear-gradient(180deg, rgba(57,31,53,0.92) 0%, rgba(43,24,41,0.98) 100%);
+      border:1px solid rgba(255,210,240,0.12);
+      border-radius:20px;
+      padding:16px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto 0;
+      height:5px;
+      background:linear-gradient(90deg, rgba(255,136,201,0.95), rgba(241,191,95,0.92));
+      opacity:0.95;
+    }
+    .card.ended{
+      opacity:0.56;
+      filter:saturate(0.72);
     }
     .card-header{
       display:flex;
@@ -123,25 +173,33 @@
     }
     .title{
       margin:0;
-      font-size:1.1rem;
-      line-height:1.4;
+      font-size:1.16rem;
+      line-height:1.5;
+      font-weight:700;
+      color:#fff2fb;
     }
     .host-inline{
       color:var(--muted);
-      font-size:0.95rem;
+      font-size:0.92rem;
       line-height:1.4;
+      padding:2px 8px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.07);
     }
     .status{
       white-space:nowrap;
       font-size:0.8rem;
       font-weight:700;
-      padding:5px 10px;
+      padding:6px 11px;
       border-radius:999px;
-      color:#20121e;
+      color:#fff8f0;
+      box-shadow:0 4px 10px rgba(0,0,0,0.16);
     }
-    .status.live{background:var(--live);}
-    .status.soon{background:var(--soon);}
-    .status.upcoming{background:#f0c9e8;}
+    .status.live{background:linear-gradient(180deg, #ff936c 0%, #dc6641 100%);}
+    .status.soon{background:linear-gradient(180deg, #f1c970 0%, #d39a2e 100%);}
+    .status.upcoming{background:linear-gradient(180deg, #b993b5 0%, #916f8e 100%);}
+    .status.ended{background:linear-gradient(180deg, #7e7984 0%, #66616b 100%);}
     .meta{
       display:flex;
       flex-wrap:wrap;
@@ -151,27 +209,34 @@
       margin-bottom:10px;
     }
     .chip{
-      border:1px solid var(--border);
+      border:1px solid rgba(255,255,255,0.08);
       border-radius:999px;
-      padding:4px 9px;
-      background:rgba(255,255,255,0.03);
+      padding:5px 10px;
+      background:rgba(255,255,255,0.05);
     }
     .summary{
       margin:8px 0 0;
-      line-height:1.7;
+      line-height:1.85;
+      color:#f4deef;
     }
     .empty{
       color:var(--muted);
-      padding:14px;
-      border:1px dashed var(--border);
-      border-radius:16px;
+      padding:16px;
+      border:1px dashed rgba(255,210,240,0.20);
+      border-radius:18px;
+      background:rgba(255,255,255,0.04);
+    }
+    @media (max-width:640px){
+      .wrap{padding:16px 10px 42px;}
+      h1{font-size:1.22rem;}
+      .title{font-size:1.03rem;}
     }
   </style>
 </head>
 <body>
   <header>
     <div class="header-inner">
-      <h1>大学東方合同合宿 企画ナビ - Sensitive</h1>
+      <h1>第n回大学東方合同合宿　自由参加企画ナビ - Sensitive</h1>
       <div class="sub" id="currentEventText">現在開催中の企画はありません。</div>
       <div class="clock" id="clock"></div>
       <a class="back" href="./index.html">← 通常ページへ戻る</a>
@@ -245,6 +310,9 @@
 
     function getStatus(event, now) {
       if (!event.start) return { key: "upcoming", label: "予定" };
+      if (event.end && now >= event.end) {
+        return { key: "ended", label: "終了" };
+      }
       if (event.end && now >= event.start && now < event.end) {
         return { key: "live", label: "開催中" };
       }
@@ -267,7 +335,7 @@
     function cardHtml(event, now) {
       const status = getStatus(event, now);
       return `
-        <article class="card">
+        <article class="card ${status.key === "ended" ? "ended" : ""}">
           <div class="card-header">
             <div class="title-wrap">
               <h3 class="title">${escapeHtml(event.title)}</h3>
@@ -302,6 +370,9 @@
         .filter(matchesFilter)
         .slice()
         .sort((a,b) => {
+          const aEnded = a.end && now >= a.end;
+          const bEnded = b.end && now >= b.end;
+          if (aEnded !== bEnded) return aEnded ? 1 : -1;
           if (!a.start && !b.start) return 0;
           if (!a.start) return 1;
           if (!b.start) return -1;
