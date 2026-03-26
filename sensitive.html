@@ -259,6 +259,8 @@
 
   <script>
     const DATA_URL = "https://script.google.com/macros/s/AKfycbyyp2QpqsWxeP4eDrB_ftmSrii5Ymy4VZuhM0UxlzTNZbqIXgELZ__Xc0KxfZU6tRyw/exec";
+    const SOON_MINUTES = 30;
+    const CAMP_START_DATE = "2026/08/20";
 
     const els = {
       clock: document.getElementById("clock"),
@@ -270,12 +272,41 @@
     let rawEvents = [];
     let normalizedEvents = [];
 
-    function parseDateTime(dateStr, timeStr) {
-      if (!dateStr || !timeStr || timeStr === "未定") return null;
-      const [y, m, d] = dateStr.split("/").map(Number);
-      const [hh, mm] = timeStr.split(":").map(Number);
-      return new Date(y, m - 1, d, hh || 0, mm || 0, 0);
-    }
+    function resolveRealDate(dayLabel) {
+  const [y, m, d] = CAMP_START_DATE.split("/").map(Number);
+  const base = new Date(y, m - 1, d, 0, 0, 0);
+
+  if (dayLabel === "1日目") return new Date(base);
+  if (dayLabel === "2日目") {
+    const d2 = new Date(base);
+    d2.setDate(d2.getDate() + 1);
+    return d2;
+  }
+  if (dayLabel === "3日目") {
+    const d3 = new Date(base);
+    d3.setDate(d3.getDate() + 2);
+    return d3;
+  }
+
+  const [yy, mm, dd] = String(dayLabel).split("/").map(Number);
+  return new Date(yy, mm - 1, dd, 0, 0, 0);
+}
+
+function parseDateTime(dateStr, timeStr) {
+  if (!dateStr || !timeStr || timeStr === "未定") return null;
+
+  const baseDate = resolveRealDate(dateStr);
+  const [hh, mm] = timeStr.split(":").map(Number);
+
+  return new Date(
+    baseDate.getFullYear(),
+    baseDate.getMonth(),
+    baseDate.getDate(),
+    hh || 0,
+    mm || 0,
+    0
+  );
+}
 
     function normalizeBool(value) {
       return String(value).toUpperCase() === "TRUE";
@@ -317,7 +348,7 @@
         return { key: "live", label: "開催中" };
       }
       const diffMin = (event.start - now) / 60000;
-      if (diffMin >= 0 && diffMin <= 30) {
+      if (diffMin >= 0 && diffMin <= SOON_MINUTES) {
         return { key: "soon", label: "まもなく開始" };
       }
       return { key: "upcoming", label: "予定" };
@@ -408,7 +439,8 @@
 
     async function init() {
       const res = await fetch(DATA_URL);
-      rawEvents = await res.json();
+      const payload = await res.json();
+      rawEvents = Array.isArray(payload) ? payload : (payload.events || []);
       normalizedEvents = rawEvents.map(normalizeEvent);
       populateCategoryFilter(normalizedEvents.filter(e => e.sensitive));
       render();
