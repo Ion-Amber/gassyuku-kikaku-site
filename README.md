@@ -152,7 +152,6 @@ title,date,start_time,end_time,location,summary,host,category,sensitive
 
 ## 今後の改善候補
 - カテゴリをプルダウン入力にする
-- `sensitive` をチェックボックス化する
 - 場所名を入力候補化する
 - Discord 連携を追加する
 - 企画詳細ページを追加する
