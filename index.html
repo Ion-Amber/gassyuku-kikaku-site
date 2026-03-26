@@ -218,7 +218,7 @@
   <header>
     <div class="header-inner">
       <h1>大学東方合同合宿 企画ナビ</h1>
-      <div class="sub">現在開催中・まもなく開始の企画を上に表示します。</div>
+      <div class="sub" id="currentEventText">現在開催中の企画はありません。</div>
       <div class="clock" id="clock"></div>
       <a class="secret-link" href="./sensitive.html">more</a>
     </div>
@@ -334,7 +334,7 @@
           <div class="card-header">
             <div class="title-wrap">
               <h3 class="title">${escapeHtml(event.title)}</h3>
-              <div class="host-inline">主催: ${escapeHtml(event.host || "未記入")}</div>
+              <div class="host-inline">${escapeHtml(event.host || "未記入")}</div>
             </div>
             <div class="status ${status.key}">${status.label}</div>
           </div>
@@ -366,6 +366,8 @@
       const now = new Date();
       els.clock.textContent = `現在時刻: ${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,"0")}/${String(now.getDate()).padStart(2,"0")} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
 
+      const currentEventText = document.getElementById("currentEventText");
+
       const visible = normalizedEvents
         .filter(e => !e.sensitive)
         .filter(matchesFilter);
@@ -373,6 +375,12 @@
       const live = visible
         .filter(e => e.start && e.end && now >= e.start && now < e.end)
         .sort((a,b) => a.start - b.start);
+
+      if (currentEventText) {
+        currentEventText.textContent = live.length
+          ? `現在開催中: ${live.map(e => e.title).join(" / ")}`
+          : "現在開催中の企画はありません。";
+      }
 
       const soon = visible
         .filter(e => e.start && (e.start - now) / 60000 >= 0 && (e.start - now) / 60000 <= SOON_MINUTES)
@@ -449,7 +457,6 @@
     }
 
     window.addEventListener("scroll", checkBottomReached);
-    window.addEventListener("load", checkBottomReached);
 
     secretCharacter.addEventListener("click", () => {
       if (!secretReady) return;
