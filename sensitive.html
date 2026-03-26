@@ -1,459 +1,65 @@
-<!doctype html>
+```html
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>第n回大学東方合同合宿　自由参加企画ナビ - Sensitive</title>
-  <link rel="icon" href="./iconsens.png" type="image/png">
-  <style>
-    :root{
-      --bg1:#1b101b;
-      --bg2:#2a1628;
-      --paper:#2b1829;
-      --paper-2:#3a2036;
-      --ink:#fff2fb;
-      --muted:#d7bdd2;
-      --line:#7f5a77;
-      --accent:#ff88c9;
-      --accent-soft:#4a263e;
-      --live:#ff8b64;
-      --soon:#f1bf5f;
-      --upcoming:#b58eb0;
-      --ended:#77707d;
-      --shadow:0 10px 28px rgba(0, 0, 0, 0.28);
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
-      color:var(--ink);
-      background:
-        radial-gradient(circle at top right, rgba(255,136,201,0.10), transparent 26%),
-        radial-gradient(circle at bottom left, rgba(241,191,95,0.08), transparent 28%),
-        linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
-    }
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      opacity:0.08;
-      background-image:
-        linear-gradient(rgba(255,210,240,0.22) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,210,240,0.22) 1px, transparent 1px);
-      background-size: 28px 28px;
-      mask-image: linear-gradient(180deg, rgba(0,0,0,0.8), rgba(0,0,0,0.15));
-    }
-    .wrap{
-      max-width:980px;
-      margin:0 auto;
-      padding:20px 14px 48px;
-    }
-    header{
-      position:sticky;
-      top:0;
-      backdrop-filter: blur(10px);
-      background:rgba(37,21,36,0.78);
-      border-bottom:1px solid rgba(255,200,235,0.12);
-      z-index:20;
-    }
-    .header-inner{
-      max-width:980px;
-      margin:0 auto;
-      padding:16px 14px 14px;
-    }
-    h1{
-      margin:0;
-      font-size:1.5rem;
-      line-height:1.45;
-      letter-spacing:0.03em;
-      color:#ffe7f7;
-    }
-    .sub{
-      margin-top:8px;
-      color:var(--muted);
-      font-size:0.97rem;
-      line-height:1.7;
-      border-left:4px solid rgba(255,136,201,0.45);
-      padding-left:10px;
-    }
-    .clock{
-      margin-top:10px;
-      font-weight:700;
-      color:#f2d6eb;
-      font-size:0.95rem;
-    }
-    .back{
-      display:inline-block;
-      margin-top:10px;
-      color:#f0d5ea;
-      text-decoration:none;
-      font-size:0.9rem;
-    }
-    .controls{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin:18px 0 16px;
-    }
-    @media (max-width:640px){
-      .controls{grid-template-columns:1fr;}
-    }
-    input, select{
-      width:100%;
-      border:1px solid rgba(255,210,240,0.16);
-      background:rgba(255,255,255,0.08);
-      color:var(--ink);
-      padding:12px 14px;
-      border-radius:14px;
-      font-size:0.95rem;
-      font-family: inherit;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
-    }
-    input::placeholder{
-      color:#ccb2c8;
-    }
-    section{margin-top:24px;}
-    .section-title{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      margin:0 0 12px;
-      font-size:1.08rem;
-      color:#ffe7f7;
-    }
-    .badge{
-      display:inline-block;
-      padding:4px 10px;
-      border-radius:999px;
-      font-size:0.78rem;
-      font-weight:700;
-      color:#311526;
-      background:linear-gradient(180deg, #ff9bd2 0%, #e56ab2 100%);
-      box-shadow:0 4px 10px rgba(229,106,178,0.18);
-    }
-    .list{
-      display:grid;
-      gap:14px;
-    }
-    .card{
-      position:relative;
-      background:
-        linear-gradient(180deg, rgba(57,31,53,0.92) 0%, rgba(43,24,41,0.98) 100%);
-      border:1px solid rgba(255,210,240,0.12);
-      border-radius:20px;
-      padding:16px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .card::before{
-      content:"";
-      position:absolute;
-      inset:0 0 auto 0;
-      height:5px;
-      background:linear-gradient(90deg, rgba(255,136,201,0.95), rgba(241,191,95,0.92));
-      opacity:0.95;
-    }
-    .card.ended{
-      opacity:0.56;
-      filter:saturate(0.72);
-    }
-    .card-header{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .title-wrap{
-      display:flex;
-      flex-wrap:wrap;
-      align-items:center;
-      gap:10px;
-    }
-    .title{
-      margin:0;
-      font-size:1.16rem;
-      line-height:1.5;
-      font-weight:700;
-      color:#fff2fb;
-    }
-    .host-inline{
-      color:var(--muted);
-      font-size:0.92rem;
-      line-height:1.4;
-      padding:2px 8px;
-      border-radius:999px;
-      background:rgba(255,255,255,0.06);
-      border:1px solid rgba(255,255,255,0.07);
-    }
-    .status{
-      white-space:nowrap;
-      font-size:0.8rem;
-      font-weight:700;
-      padding:6px 11px;
-      border-radius:999px;
-      color:#fff8f0;
-      box-shadow:0 4px 10px rgba(0,0,0,0.16);
-    }
-    .status.live{background:linear-gradient(180deg, #ff936c 0%, #dc6641 100%);}
-    .status.soon{background:linear-gradient(180deg, #f1c970 0%, #d39a2e 100%);}
-    .status.upcoming{background:linear-gradient(180deg, #b993b5 0%, #916f8e 100%);}
-    .status.ended{background:linear-gradient(180deg, #7e7984 0%, #66616b 100%);}
-    .meta{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      color:var(--muted);
-      font-size:0.9rem;
-      margin-bottom:10px;
-    }
-    .chip{
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:999px;
-      padding:5px 10px;
-      background:rgba(255,255,255,0.05);
-    }
-    .summary{
-      margin:8px 0 0;
-      line-height:1.85;
-      color:#f4deef;
-    }
-    .empty{
-      color:var(--muted);
-      padding:16px;
-      border:1px dashed rgba(255,210,240,0.20);
-      border-radius:18px;
-      background:rgba(255,255,255,0.04);
-    }
-    @media (max-width:640px){
-      .wrap{padding:16px 10px 42px;}
-      h1{font-size:1.22rem;}
-      .title{font-size:1.03rem;}
-    }
-  </style>
+<meta charset="UTF-8">
+<title>センシティブ企画</title>
+<link rel="icon" href="iconsens.png">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
+
 <body>
-  <header>
-    <div class="header-inner">
-      <h1>第n回大学東方合同合宿　自由参加企画ナビ - Sensitive</h1>
-      <div class="sub" id="currentEventText">現在開催中の企画はありません。</div>
-      <div class="clock" id="clock"></div>
-      <a class="back" href="./index.html">← 通常ページへ戻る</a>
-    </div>
-  </header>
 
-  <main class="wrap">
-    <div class="controls">
-      <input id="searchInput" type="search" placeholder="企画名・場所・主催・説明で検索" />
-      <select id="categoryFilter">
-        <option value="">すべてのカテゴリ</option>
-      </select>
-    </div>
+<h1>センシティブ企画</h1>
+<div id="list"></div>
 
-    <section>
-      <h2 class="section-title">開催中 / 予定一覧 <span class="badge">Sensitive</span></h2>
-      <div class="list" id="allList"></div>
-    </section>
-  </main>
+<script>
+const DATA_URL = "https://script.google.com/macros/s/AKfycbyyp2QpqsWxeP4eDrB_ftmSrii5Ymy4VZuhM0UxlzTNZbqIXgELZ__Xc0KxfZU6tRyw/exec";
+const CAMP_START_DATE = "2026/08/20";
 
-  <script>
-    const DATA_URL = "https://script.google.com/macros/s/AKfycbyyp2QpqsWxeP4eDrB_ftmSrii5Ymy4VZuhM0UxlzTNZbqIXgELZ__Xc0KxfZU6tRyw/exec";
-    const SOON_MINUTES = 30;
-    const CAMP_START_DATE = "2026/08/20";
+function resolveRealDate(dayLabel) {
+  const [y,m,d] = CAMP_START_DATE.split("/").map(Number);
+  const base = new Date(y,m-1,d);
 
-    const els = {
-      clock: document.getElementById("clock"),
-      allList: document.getElementById("allList"),
-      searchInput: document.getElementById("searchInput"),
-      categoryFilter: document.getElementById("categoryFilter"),
-    };
+  if (dayLabel === "2日目") base.setDate(base.getDate()+1);
+  if (dayLabel === "3日目") base.setDate(base.getDate()+2);
 
-    let rawEvents = [];
-    let normalizedEvents = [];
-
-    function resolveRealDate(dayLabel) {
-  const [y, m, d] = CAMP_START_DATE.split("/").map(Number);
-  const base = new Date(y, m - 1, d, 0, 0, 0);
-
-  if (dayLabel === "1日目") return new Date(base);
-  if (dayLabel === "2日目") {
-    const d2 = new Date(base);
-    d2.setDate(d2.getDate() + 1);
-    return d2;
-  }
-  if (dayLabel === "3日目") {
-    const d3 = new Date(base);
-    d3.setDate(d3.getDate() + 2);
-    return d3;
-  }
-
-  const [yy, mm, dd] = String(dayLabel).split("/").map(Number);
-  return new Date(yy, mm - 1, dd, 0, 0, 0);
+  return base;
 }
 
-function parseDateTime(dateStr, timeStr) {
-  if (!dateStr || !timeStr || timeStr === "未定") return null;
+function parseDateTime(date, time) {
+  if (!time || time === "未定") return null;
 
-  const baseDate = resolveRealDate(dateStr);
-  const [hh, mm] = timeStr.split(":").map(Number);
+  const d = resolveRealDate(date);
+  const [h,m] = time.split(":").map(Number);
 
-  return new Date(
-    baseDate.getFullYear(),
-    baseDate.getMonth(),
-    baseDate.getDate(),
-    hh || 0,
-    mm || 0,
-    0
-  );
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m);
 }
 
-    function normalizeBool(value) {
-      return String(value).toUpperCase() === "TRUE";
-    }
+function normalizeEvent(ev) {
+  return {
+    ...ev,
+    start: parseDateTime(ev.date, ev.start_time),
+    end: parseDateTime(ev.date, ev.end_time),
+    sensitive: String(ev.sensitive).toUpperCase() === "TRUE"
+  };
+}
 
-    function normalizeEvent(event) {
-      const start = parseDateTime(event.date, event.start_time);
-      let end = parseDateTime(event.date, event.end_time);
+async function init() {
+  const res = await fetch(DATA_URL);
+  const json = await res.json();
 
-      if (start && end && end < start) {
-        end.setDate(end.getDate() + 1);
-      }
+  const events = json.events
+    .map(normalizeEvent)
+    .filter(e => e.sensitive);
 
-      return {
-        ...event,
-        sensitive: normalizeBool(event.sensitive),
-        start,
-        end,
-      };
-    }
+  document.getElementById("list").innerHTML =
+    events.map(e => `<div>${e.title} / ${e.date}</div>`).join("");
+}
 
-    function formatDateRange(event) {
-      const date = event.date;
-      const start = event.start_time || "未定";
-      const end = event.end_time || "未定";
-      if (end === "未定") return `${date} ${start}〜終了未定`;
-      if (event.end && event.start && event.end.toDateString() !== event.start.toDateString()) {
-        return `${date} ${start}〜翌${String(event.end.getHours()).padStart(2,"0")}:${String(event.end.getMinutes()).padStart(2,"0")}`;
-      }
-      return `${date} ${start}〜${end}`;
-    }
+init();
+</script>
 
-    function getStatus(event, now) {
-      if (!event.start) return { key: "upcoming", label: "予定" };
-      if (event.end && now >= event.end) {
-        return { key: "ended", label: "終了" };
-      }
-      if (event.end && now >= event.start && now < event.end) {
-        return { key: "live", label: "開催中" };
-      }
-      const diffMin = (event.start - now) / 60000;
-      if (diffMin >= 0 && diffMin <= SOON_MINUTES) {
-        return { key: "soon", label: "まもなく開始" };
-      }
-      return { key: "upcoming", label: "予定" };
-    }
-
-    function matchesFilter(event) {
-      const q = els.searchInput.value.trim().toLowerCase();
-      const cat = els.categoryFilter.value;
-      const hay = [event.title, event.location, event.host, event.summary, event.category].join(" ").toLowerCase();
-      if (q && !hay.includes(q)) return false;
-      if (cat && event.category !== cat) return false;
-      return true;
-    }
-
-    function cardHtml(event, now) {
-      const status = getStatus(event, now);
-      return `
-        <article class="card ${status.key === "ended" ? "ended" : ""}">
-          <div class="card-header">
-            <div class="title-wrap">
-              <h3 class="title">${escapeHtml(event.title)}</h3>
-              <div class="host-inline">${escapeHtml(event.host || "未記入")}</div>
-            </div>
-            <div class="status ${status.key}">${status.label}</div>
-          </div>
-          <div class="meta">
-            <span class="chip">${escapeHtml(formatDateRange(event))}</span>
-            <span class="chip">${escapeHtml(event.location || "場所未定")}</span>
-            <span class="chip">${escapeHtml(event.category || "カテゴリ未設定")}</span>
-          </div>
-          <p class="summary">${escapeHtml(event.summary || "説明なし")}</p>
-        </article>
-      `;
-    }
-
-    function populateCategoryFilter(events) {
-      const categories = [...new Set(events.map(e => e.category).filter(Boolean))];
-      els.categoryFilter.innerHTML = '<option value="">すべてのカテゴリ</option>' +
-        categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
-    }
-
-    function render() {
-      const now = new Date();
-      els.clock.textContent = `現在時刻: ${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,"0")}/${String(now.getDate()).padStart(2,"0")} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
-
-      const currentEventText = document.getElementById("currentEventText");
-
-      const visible = normalizedEvents
-        .filter(e => e.sensitive)
-        .filter(matchesFilter)
-        .slice()
-        .sort((a,b) => {
-          const aEnded = a.end && now >= a.end;
-          const bEnded = b.end && now >= b.end;
-          if (aEnded !== bEnded) return aEnded ? 1 : -1;
-          if (!a.start && !b.start) return 0;
-          if (!a.start) return 1;
-          if (!b.start) return -1;
-          return a.start - b.start;
-        });
-
-      const live = visible
-        .filter(e => e.start && e.end && now >= e.start && now < e.end)
-        .sort((a,b) => a.start - b.start);
-
-      if (currentEventText) {
-        currentEventText.textContent = live.length
-          ? `現在開催中: ${live.map(e => e.title).join(" / ")}`
-          : "現在開催中の企画はありません。";
-      }
-
-      if (!visible.length) {
-        els.allList.innerHTML = `<div class="empty">表示できるセンシティブ企画がありません。</div>`;
-        return;
-      }
-
-      els.allList.innerHTML = visible.map(e => cardHtml(e, now)).join("");
-    }
-
-    function escapeHtml(str) {
-      return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
-    }
-
-    async function init() {
-      const res = await fetch(DATA_URL);
-      const payload = await res.json();
-      rawEvents = Array.isArray(payload) ? payload : (payload.events || []);
-      normalizedEvents = rawEvents.map(normalizeEvent);
-      populateCategoryFilter(normalizedEvents.filter(e => e.sensitive));
-      render();
-      setInterval(render, 60 * 1000);
-    }
-
-    els.searchInput.addEventListener("input", render);
-    els.categoryFilter.addEventListener("change", render);
-
-    init().catch(err => {
-      console.error(err);
-      els.allList.innerHTML = `<div class="empty">データの読み込みに失敗しました。</div>`;
-    });
-  </script>
 </body>
 </html>
+```
