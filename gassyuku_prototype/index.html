@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>大学東方合同合宿 企画ナビ</title>
+  <style>
+    :root{
+      --bg:#0f1220;
+      --panel:#191d31;
+      --panel-2:#222845;
+      --text:#eef2ff;
+      --muted:#b8c0e0;
+      --accent:#9e7bff;
+      --accent-2:#60c7ff;
+      --live:#24c18a;
+      --soon:#ffb347;
+      --border:rgba(255,255,255,0.08);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:linear-gradient(180deg, #101427 0%, #0f1220 100%);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:980px;
+      margin:0 auto;
+      padding:20px 14px 48px;
+    }
+    header{
+      position:sticky;
+      top:0;
+      backdrop-filter: blur(10px);
+      background:rgba(15,18,32,0.8);
+      border-bottom:1px solid var(--border);
+      z-index:20;
+    }
+    .header-inner{
+      max-width:980px;
+      margin:0 auto;
+      padding:14px;
+    }
+    h1{
+      margin:0 0 6px;
+      font-size:1.45rem;
+    }
+    .sub{
+      color:var(--muted);
+      font-size:0.95rem;
+      line-height:1.5;
+    }
+    .clock{
+      margin-top:8px;
+      font-weight:700;
+    }
+    .controls{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin:18px 0 16px;
+    }
+    @media (max-width:640px){
+      .controls{grid-template-columns:1fr;}
+    }
+    input, select{
+      width:100%;
+      border:1px solid var(--border);
+      background:var(--panel);
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:12px;
+      font-size:0.95rem;
+    }
+    section{margin-top:22px;}
+    .section-title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin:0 0 12px;
+      font-size:1.05rem;
+    }
+    .badge{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:0.8rem;
+      font-weight:700;
+      color:#0b1020;
+      background:var(--accent-2);
+    }
+    .list{
+      display:grid;
+      gap:12px;
+    }
+    .card{
+      background:linear-gradient(180deg, var(--panel), var(--panel-2));
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 8px 28px rgba(0,0,0,0.18);
+    }
+    .card-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .title-wrap{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:10px;
+    }
+    .title{
+      margin:0;
+      font-size:1.1rem;
+      line-height:1.4;
+    }
+    .host-inline{
+      color:var(--muted);
+      font-size:0.95rem;
+      line-height:1.4;
+    }
+    .status{
+      white-space:nowrap;
+      font-size:0.8rem;
+      font-weight:700;
+      padding:5px 10px;
+      border-radius:999px;
+      color:#0f1220;
+    }
+    .status.live{background:var(--live);}
+    .status.soon{background:var(--soon);}
+    .status.upcoming{background:#c4ccff;}
+    .meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      color:var(--muted);
+      font-size:0.9rem;
+      margin-bottom:10px;
+    }
+    .chip{
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:4px 9px;
+      background:rgba(255,255,255,0.03);
+    }
+    .summary{
+      margin:8px 0 0;
+      line-height:1.7;
+    }
+    .empty{
+      color:var(--muted);
+      padding:14px;
+      border:1px dashed var(--border);
+      border-radius:16px;
+    }
+    .secret-link{
+      display:inline-block;
+      margin-top:10px;
+      color:rgba(255,255,255,0.18);
+      text-decoration:none;
+      font-size:0.75rem;
+      user-select:none;
+    }
+    .secret-link:hover{
+      color:rgba(255,255,255,0.3);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>大学東方合同合宿 企画ナビ</h1>
+      <div class="sub">現在開催中・まもなく開始の企画を上に表示します。</div>
+      <div class="clock" id="clock"></div>
+      <a class="secret-link" href="./sensitive.html">more</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="controls">
+      <input id="searchInput" type="search" placeholder="企画名・場所・主催・説明で検索" />
+      <select id="categoryFilter">
+        <option value="">すべてのカテゴリ</option>
+      </select>
+    </div>
+
+    <section>
+      <h2 class="section-title">いま開催中 <span class="badge">自動更新</span></h2>
+      <div class="list" id="liveList"></div>
+    </section>
+
+    <section>
+      <h2 class="section-title">まもなく開始</h2>
+      <div class="list" id="soonList"></div>
+    </section>
+
+    <section>
+      <h2 class="section-title">企画一覧</h2>
+      <div class="list" id="allList"></div>
+    </section>
+  </main>
+
+  <script>
+    const DATA_URL = "https://script.google.com/macros/s/AKfycbyyp2QpqsWxeP4eDrB_ftmSrii5Ymy4VZuhM0UxlzTNZbqIXgELZ__Xc0KxfZU6tRyw/exec";
+    const SOON_MINUTES = 30;
+
+    const els = {
+      clock: document.getElementById("clock"),
+      liveList: document.getElementById("liveList"),
+      soonList: document.getElementById("soonList"),
+      allList: document.getElementById("allList"),
+      searchInput: document.getElementById("searchInput"),
+      categoryFilter: document.getElementById("categoryFilter"),
+    };
+
+    let rawEvents = [];
+    let normalizedEvents = [];
+
+    function parseDateTime(dateStr, timeStr) {
+      if (!dateStr || !timeStr || timeStr === "未定") return null;
+      const [y, m, d] = dateStr.split("/").map(Number);
+      const [hh, mm] = timeStr.split(":").map(Number);
+      return new Date(y, m - 1, d, hh || 0, mm || 0, 0);
+    }
+
+    function normalizeBool(value) {
+      return String(value).toUpperCase() === "TRUE";
+    }
+
+    function normalizeEvent(event) {
+      const start = parseDateTime(event.date, event.start_time);
+      let end = parseDateTime(event.date, event.end_time);
+
+      if (start && end && end < start) {
+        end.setDate(end.getDate() + 1);
+      }
+
+      return {
+        ...event,
+        sensitive: normalizeBool(event.sensitive),
+        start,
+        end,
+      };
+    }
+
+    function formatDateRange(event) {
+      const date = event.date;
+      const start = event.start_time || "未定";
+      const end = event.end_time || "未定";
+      if (end === "未定") return `${date} ${start}〜終了未定`;
+      if (event.end && event.start && event.end.toDateString() !== event.start.toDateString()) {
+        return `${date} ${start}〜翌${String(event.end.getHours()).padStart(2,"0")}:${String(event.end.getMinutes()).padStart(2,"0")}`;
+      }
+      return `${date} ${start}〜${end}`;
+    }
+
+    function getStatus(event, now) {
+      if (!event.start) return { key: "upcoming", label: "予定" };
+      if (event.end && now >= event.start && now < event.end) {
+        return { key: "live", label: "開催中" };
+      }
+      const diffMin = (event.start - now) / 60000;
+      if (diffMin >= 0 && diffMin <= SOON_MINUTES) {
+        return { key: "soon", label: "まもなく開始" };
+      }
+      return { key: "upcoming", label: "予定" };
+    }
+
+    function matchesFilter(event) {
+      const q = els.searchInput.value.trim().toLowerCase();
+      const cat = els.categoryFilter.value;
+      const hay = [event.title, event.location, event.host, event.summary, event.category].join(" ").toLowerCase();
+      if (q && !hay.includes(q)) return false;
+      if (cat && event.category !== cat) return false;
+      return true;
+    }
+
+    function cardHtml(event, now) {
+      const status = getStatus(event, now);
+      return `
+        <article class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <h3 class="title">${escapeHtml(event.title)}</h3>
+              <div class="host-inline">主催: ${escapeHtml(event.host || "未記入")}</div>
+            </div>
+            <div class="status ${status.key}">${status.label}</div>
+          </div>
+          <div class="meta">
+            <span class="chip">${escapeHtml(formatDateRange(event))}</span>
+            <span class="chip">${escapeHtml(event.location || "場所未定")}</span>
+            <span class="chip">${escapeHtml(event.category || "カテゴリ未設定")}</span>
+          </div>
+          <p class="summary">${escapeHtml(event.summary || "説明なし")}</p>
+        </article>
+      `;
+    }
+
+    function renderList(container, events, now, emptyText) {
+      if (!events.length) {
+        container.innerHTML = `<div class="empty">${emptyText}</div>`;
+        return;
+      }
+      container.innerHTML = events.map(e => cardHtml(e, now)).join("");
+    }
+
+    function populateCategoryFilter(events) {
+      const categories = [...new Set(events.map(e => e.category).filter(Boolean))];
+      els.categoryFilter.innerHTML = '<option value="">すべてのカテゴリ</option>' +
+        categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+    }
+
+    function render() {
+      const now = new Date();
+      els.clock.textContent = `現在時刻: ${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,"0")}/${String(now.getDate()).padStart(2,"0")} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+
+      const visible = normalizedEvents
+        .filter(e => !e.sensitive)
+        .filter(matchesFilter);
+
+      const live = visible
+        .filter(e => e.start && e.end && now >= e.start && now < e.end)
+        .sort((a,b) => a.start - b.start);
+
+      const soon = visible
+        .filter(e => e.start && (e.start - now) / 60000 >= 0 && (e.start - now) / 60000 <= SOON_MINUTES)
+        .sort((a,b) => a.start - b.start);
+
+      const all = visible
+        .slice()
+        .sort((a,b) => {
+          if (!a.start && !b.start) return 0;
+          if (!a.start) return 1;
+          if (!b.start) return -1;
+          return a.start - b.start;
+        });
+
+      renderList(els.liveList, live, now, "現在開催中の企画はありません。");
+      renderList(els.soonList, soon, now, "30分以内に始まる企画はありません。");
+      renderList(els.allList, all, now, "表示できる企画がありません。");
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    async function init() {
+      const res = await fetch(DATA_URL);
+      rawEvents = await res.json();
+      normalizedEvents = rawEvents.map(normalizeEvent);
+      populateCategoryFilter(normalizedEvents.filter(e => !e.sensitive));
+      render();
+      setInterval(render, 60 * 1000);
+    }
+
+    els.searchInput.addEventListener("input", render);
+    els.categoryFilter.addEventListener("change", render);
+
+    init().catch(err => {
+      console.error(err);
+      els.allList.innerHTML = `<div class="empty">データの読み込みに失敗しました。</div>`;
+    });
+  </script>
+</body>
+</html>
