@@ -170,7 +170,49 @@
     .secret-link:hover{
       color:rgba(255,255,255,0.3);
     }
-  </style>
+  
+    .secret-link{
+      display:none;
+    }
+    .secret-link{
+      display:none;
+    }
+    .secret-character{
+      position: fixed;
+      right: 20px;
+      bottom: -220px;
+      width: 140px;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        bottom 0.35s ease,
+        opacity 0.25s ease;
+    }
+    .secret-character img{
+      width: 100%;
+      height: auto;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .secret-character.show{
+      bottom: 0;
+      opacity: 1;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    @media (max-width:640px){
+      .secret-character{
+        width: 110px;
+        right: 12px;
+        bottom: -170px;
+      }
+      .secret-character.show{
+        bottom: 0;
+      }
+    }
+</style>
 </head>
 <body>
   <header>
@@ -205,6 +247,10 @@
       <div class="list" id="allList"></div>
     </section>
   </main>
+
+    <div id="secretCharacter" class="secret-character" aria-label="hidden entrance">
+  <img id="secretCharacterImg" src="./secret-char-1.png" alt="hidden character" />
+</div>
 
   <script>
     const DATA_URL = "https://script.google.com/macros/s/AKfycbyyp2QpqsWxeP4eDrB_ftmSrii5Ymy4VZuhM0UxlzTNZbqIXgELZ__Xc0KxfZU6tRyw/exec";
@@ -367,7 +413,50 @@
     els.searchInput.addEventListener("input", render);
     els.categoryFilter.addEventListener("change", render);
 
-    init().catch(err => {
+
+    const secretCharacter = document.getElementById("secretCharacter");
+    const secretCharacterImg = document.getElementById("secretCharacterImg");
+
+    let secretReady = false;
+    let secretSwapTimer = null;
+
+    function checkBottomReached() {
+      const scrollY = window.scrollY || window.pageYOffset;
+      const windowHeight = window.innerHeight;
+      const docHeight = document.documentElement.scrollHeight;
+      const nearBottom = scrollY + windowHeight >= docHeight - 20;
+
+      if (nearBottom) {
+        secretCharacter.classList.add("show");
+
+        if (!secretReady && !secretSwapTimer) {
+          secretCharacterImg.src = "./secret-char-1.png";
+          secretSwapTimer = setTimeout(() => {
+            secretCharacterImg.src = "./secret-char-2.png";
+            secretReady = true;
+            secretSwapTimer = null;
+          }, 800);
+        }
+      } else {
+        secretCharacter.classList.remove("show");
+        secretCharacterImg.src = "./secret-char-1.png";
+        secretReady = false;
+        if (secretSwapTimer) {
+          clearTimeout(secretSwapTimer);
+          secretSwapTimer = null;
+        }
+      }
+    }
+
+    window.addEventListener("scroll", checkBottomReached);
+    window.addEventListener("load", checkBottomReached);
+
+    secretCharacter.addEventListener("click", () => {
+      if (!secretReady) return;
+      window.location.href = "./sensitive.html";
+    });
+
+init().catch(err => {
       console.error(err);
       els.allList.innerHTML = `<div class="empty">データの読み込みに失敗しました。</div>`;
     });
