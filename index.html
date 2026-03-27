@@ -1,11 +1,10 @@
 <!doctype html>
 <html lang="ja">
 <head>
- <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
- <link rel="apple-touch-icon" href="icon.png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>第n回大学東方合同合宿　自由参加企画ナビ</title>
+  <link rel="icon" type="image/png" href="./icon.png">
   <style>
     :root{
       --bg1:#f7f0e4;
@@ -86,9 +85,12 @@
     }
     .controls{
       display:grid;
-      grid-template-columns:1fr 1fr;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
       gap:10px;
       margin:18px 0 16px;
+    }
+    @media (max-width:900px){
+      .controls{grid-template-columns:repeat(2, minmax(0, 1fr));}
     }
     @media (max-width:640px){
       .controls{grid-template-columns:1fr;}
@@ -292,6 +294,12 @@
       <select id="categoryFilter">
         <option value="">すべてのカテゴリ</option>
       </select>
+      <select id="dateFilter">
+        <option value="">すべての日時</option>
+      </select>
+      <select id="locationFilter">
+        <option value="">すべての場所</option>
+      </select>
     </div>
 
     <section>
@@ -308,7 +316,7 @@
       <h2 class="section-title">企画一覧</h2>
       <div class="list" id="allList"></div>
     </section>
-  
+
     <div class="credit">
       使用した素材元:
       <a href="https://www.youtube.com/channel/UCQcDdg4W6r5OfcB1JTcpABw" target="_blank" rel="noopener noreferrer">
@@ -318,14 +326,21 @@
 
   </main>
 
-    <div id="secretCharacter" class="secret-character" aria-label="hidden entrance">
-  <img id="secretCharacterImg" src="./secret-char-1.png" alt="hidden character" />
-</div>
+  <div id="secretCharacter" class="secret-character" aria-label="hidden entrance">
+    <img id="secretCharacterImg" src="./secret-char-1.png" alt="hidden character" />
+  </div>
 
   <script>
     const DATA_URL = "https://script.google.com/macros/s/AKfycbyyp2QpqsWxeP4eDrB_ftmSrii5Ymy4VZuhM0UxlzTNZbqIXgELZ__Xc0KxfZU6tRyw/exec";
     const SOON_MINUTES = 30;
-    const DEFAULT_CAMP_START_DATE = "2026/08/20";
+
+    const DATE_FILTER_OPTIONS = [
+      { value: "day:1日目", label: "1日目" },
+      { value: "day:2日目", label: "2日目" },
+      { value: "day:3日目", label: "3日目" },
+      { value: "within:60", label: "直近1時間以内" },
+      { value: "within:120", label: "直近2時間以内" }
+    ];
 
     const els = {
       clock: document.getElementById("clock"),
@@ -334,52 +349,54 @@
       allList: document.getElementById("allList"),
       searchInput: document.getElementById("searchInput"),
       categoryFilter: document.getElementById("categoryFilter"),
+      dateFilter: document.getElementById("dateFilter"),
+      locationFilter: document.getElementById("locationFilter"),
     };
 
     let rawEvents = [];
     let normalizedEvents = [];
-    let campStartDate = DEFAULT_CAMP_START_DATE;
+    let campStartDate = "2026/08/20";
 
     function resolveRealDate(dayLabel) {
-  const [y, m, d] = campStartDate.split("/").map(Number);
-  const base = new Date(y, m - 1, d, 0, 0, 0, 0);
-  const label = String(dayLabel ?? "").trim();
+      const label = String(dayLabel ?? "").trim();
+      const [y, m, d] = campStartDate.split("/").map(Number);
+      const base = new Date(y, m - 1, d, 0, 0, 0, 0);
 
-  const dayMatch = label.match(/^(\d+)日目$/);
-  if (dayMatch) {
-    const offset = Number(dayMatch[1]) - 1;
-    const realDate = new Date(base);
-    realDate.setDate(realDate.getDate() + offset);
-    return realDate;
-  }
+      const dayMatch = label.match(/^(\d+)日目$/);
+      if (dayMatch) {
+        const offset = Number(dayMatch[1]) - 1;
+        const realDate = new Date(base);
+        realDate.setDate(realDate.getDate() + offset);
+        return realDate;
+      }
 
-  const slashMatch = label.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
-  if (slashMatch) {
-    const [, yy, mm, dd] = slashMatch;
-    return new Date(Number(yy), Number(mm) - 1, Number(dd), 0, 0, 0, 0);
-  }
+      const slashMatch = label.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+      if (slashMatch) {
+        const [, yy, mm, dd] = slashMatch;
+        return new Date(Number(yy), Number(mm) - 1, Number(dd), 0, 0, 0, 0);
+      }
 
-  return null;
-}
+      return null;
+    }
 
-function parseDateTime(dateStr, timeStr) {
-  if (!dateStr || !timeStr || timeStr === "未定") return null;
+    function parseDateTime(dateStr, timeStr) {
+      if (!dateStr || !timeStr || timeStr === "未定") return null;
 
-  const baseDate = resolveRealDate(dateStr);
-  if (!baseDate || Number.isNaN(baseDate.getTime())) return null;
+      const baseDate = resolveRealDate(dateStr);
+      if (!baseDate) return null;
 
-  const [hh, mm] = String(timeStr).split(":").map(Number);
+      const [hh, mm] = String(timeStr).split(":").map(Number);
 
-  return new Date(
-    baseDate.getFullYear(),
-    baseDate.getMonth(),
-    baseDate.getDate(),
-    hh || 0,
-    mm || 0,
-    0,
-    0
-  );
-}
+      return new Date(
+        baseDate.getFullYear(),
+        baseDate.getMonth(),
+        baseDate.getDate(),
+        hh || 0,
+        mm || 0,
+        0,
+        0
+      );
+    }
 
     function normalizeEvent(event) {
       const title = event.title ?? event.企画名 ?? event.name ?? "無題";
@@ -388,8 +405,8 @@ function parseDateTime(dateStr, timeStr) {
       const category = event.category ?? event.カテゴリ ?? "";
       const summary = event.summary ?? event.説明 ?? event.description ?? "";
       const date = event.date ?? event.日付 ?? event.day ?? "";
-      const start_time = event.start_time ?? event.開始 ?? event.開始時刻 ?? "未定";
-      const end_time = event.end_time ?? event.終了 ?? event.終了時刻 ?? "未定";
+      const start_time = event.start_time ?? event.開始 ?? event.開始時刻 ?? event.start ?? "未定";
+      const end_time = event.end_time ?? event.終了 ?? event.終了時刻 ?? event.end ?? "未定";
       const sensitiveValue = event.sensitive ?? event.センシティブ ?? event.hidden ?? false;
 
       const start = parseDateTime(date, start_time);
@@ -409,7 +426,7 @@ function parseDateTime(dateStr, timeStr) {
         date,
         start_time,
         end_time,
-        sensitive: String(sensitiveValue).toLowerCase() === "true" || sensitiveValue === true,
+        sensitive: String(sensitiveValue).toLowerCase() === "true" || sensitiveValue === true || sensitiveValue === "TRUE",
         start,
         end,
       };
@@ -435,18 +452,41 @@ function parseDateTime(dateStr, timeStr) {
         return { key: "live", label: "開催中" };
       }
       const diffMin = (event.start - now) / 60000;
-      if (diffMin >= 0 && diffMin <= 30) {
+      if (diffMin >= 0 && diffMin <= SOON_MINUTES) {
         return { key: "soon", label: "まもなく開始" };
       }
       return { key: "upcoming", label: "予定" };
     }
 
+    function matchesDateFilter(event, now) {
+      const value = els.dateFilter.value;
+      if (!value) return true;
+
+      if (value.startsWith("day:")) {
+        return String(event.date ?? "").trim() === value.slice(4);
+      }
+
+      if (value.startsWith("within:")) {
+        if (!event.start) return false;
+        const minutes = Number(value.slice(7));
+        const diffMin = (event.start - now) / 60000;
+        return diffMin >= 0 && diffMin <= minutes;
+      }
+
+      return true;
+    }
+
     function matchesFilter(event) {
       const q = els.searchInput.value.trim().toLowerCase();
       const cat = els.categoryFilter.value;
+      const location = els.locationFilter.value;
+      const now = new Date();
+
       const hay = [event.title, event.location, event.host, event.summary, event.category].join(" ").toLowerCase();
       if (q && !hay.includes(q)) return false;
       if (cat && event.category !== cat) return false;
+      if (location && event.location !== location) return false;
+      if (!matchesDateFilter(event, now)) return false;
       return true;
     }
 
@@ -485,6 +525,17 @@ function parseDateTime(dateStr, timeStr) {
         categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
     }
 
+    function populateDateFilter() {
+      els.dateFilter.innerHTML = '<option value="">すべての日時</option>' +
+        DATE_FILTER_OPTIONS.map(option => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`).join("");
+    }
+
+    function populateLocationFilter(events) {
+      const locations = [...new Set(events.map(e => e.location).filter(Boolean))];
+      els.locationFilter.innerHTML = '<option value="">すべての場所</option>' +
+        locations.map(location => `<option value="${escapeHtml(location)}">${escapeHtml(location)}</option>`).join("");
+    }
+
     function render() {
       const now = new Date();
       els.clock.textContent = `現在時刻: ${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,"0")}/${String(now.getDate()).padStart(2,"0")} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
@@ -497,7 +548,7 @@ function parseDateTime(dateStr, timeStr) {
 
       const live = visible
         .filter(e => e.start && e.end && now >= e.start && now < e.end)
-        .sort((a,b) => a.start - b.start);
+        .sort((a, b) => a.start - b.start);
 
       if (currentEventText) {
         currentEventText.textContent = live.length
@@ -507,11 +558,11 @@ function parseDateTime(dateStr, timeStr) {
 
       const soon = visible
         .filter(e => e.start && (e.start - now) / 60000 >= 0 && (e.start - now) / 60000 <= SOON_MINUTES)
-        .sort((a,b) => a.start - b.start);
+        .sort((a, b) => a.start - b.start);
 
       const all = visible
         .slice()
-        .sort((a,b) => {
+        .sort((a, b) => {
           const aEnded = a.end && now >= a.end;
           const bEnded = b.end && now >= b.end;
           if (aEnded !== bEnded) return aEnded ? 1 : -1;
@@ -544,23 +595,28 @@ function parseDateTime(dateStr, timeStr) {
       const payload = await res.json();
       rawEvents = Array.isArray(payload) ? payload : (payload.events || payload.data || []);
 
-      if (!Array.isArray(rawEvents)) {
-        throw new Error("レスポンスが配列ではありません");
-      }
-
       if (payload && payload.camp_start_date) {
         campStartDate = payload.camp_start_date;
       }
 
+      if (!Array.isArray(rawEvents)) {
+        throw new Error("レスポンスが配列ではありません");
+      }
+
       normalizedEvents = rawEvents.map(normalizeEvent);
-      populateCategoryFilter(normalizedEvents.filter(e => !e.sensitive));
+      const publicEvents = normalizedEvents.filter(e => !e.sensitive);
+
+      populateCategoryFilter(publicEvents);
+      populateDateFilter();
+      populateLocationFilter(publicEvents);
       render();
       setInterval(render, 60 * 1000);
     }
 
     els.searchInput.addEventListener("input", render);
     els.categoryFilter.addEventListener("change", render);
-
+    els.dateFilter.addEventListener("change", render);
+    els.locationFilter.addEventListener("change", render);
 
     const secretCharacter = document.getElementById("secretCharacter");
     const secretCharacterImg = document.getElementById("secretCharacterImg");
@@ -603,8 +659,10 @@ function parseDateTime(dateStr, timeStr) {
       window.location.href = "./sensitive.html";
     });
 
-init().catch(err => {
+    init().catch(err => {
       console.error(err);
+      els.liveList.innerHTML = `<div class="empty">現在開催中の企画を取得できませんでした。</div>`;
+      els.soonList.innerHTML = `<div class="empty">まもなく開始の企画を取得できませんでした。</div>`;
       els.allList.innerHTML = `<div class="empty">データの読み込みに失敗しました。</div>`;
     });
   </script>
