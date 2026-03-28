@@ -163,6 +163,42 @@
       font-size:1rem;
       line-height:1;
     }
+    .favorite-button{
+      appearance:none;
+      -webkit-appearance:none;
+      border:1px solid rgba(255,220,240,0.14);
+      background:rgba(255,255,255,0.08);
+      color:var(--muted);
+      width:40px;
+      height:40px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.2rem;
+      line-height:1;
+      cursor:pointer;
+      flex:0 0 auto;
+      font-family:inherit;
+      transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+      box-shadow:0 4px 12px rgba(0,0,0,0.18);
+    }
+    .favorite-button:hover{
+      transform:translateY(-1px);
+      box-shadow:0 6px 16px rgba(0,0,0,0.22);
+    }
+    .favorite-button:active{
+      transform:translateY(0);
+    }
+    .favorite-button.is-active{
+      color:var(--accent);
+      border-color:rgba(255,136,201,0.34);
+      background:rgba(255,136,201,0.12);
+    }
+    .favorite-button:focus-visible{
+      outline:2px solid var(--accent);
+      outline-offset:2px;
+    }
     @media (max-width:900px){
       .filter-row{
         grid-template-columns:1fr 1fr;
@@ -551,6 +587,8 @@ function toggleFavoriteById(favoriteId) {
   render();
 }
 
+window.toggleFavoriteById = toggleFavoriteById;
+
     function matchesDateFilter(event, now) {
       const value = els.dateFilter.value;
       if (!value) return true;
@@ -594,7 +632,7 @@ function toggleFavoriteById(favoriteId) {
               <h3 class="title">${escapeHtml(event.title)}</h3>
               <div class="host-inline">${escapeHtml(event.host || "未記入")}</div>
             </div>
-            <div style="display:flex; align-items:center; gap:10px;">\n            <button class="favorite-button ${isFavorite(event) ? "is-active" : ""}" type="button" aria-label="${isFavorite(event) ? "お気に入り解除" : "お気に入り登録"}" title="${isFavorite(event) ? "お気に入り解除" : "お気に入り登録"}" onclick="toggleFavoriteById(${JSON.stringify(event.favoriteId)})">${isFavorite(event) ? "★" : "☆"}</button>\n            <div class="status ${status.key}">${status.label}</div>\n          </div>
+            <div style="display:flex; align-items:center; gap:10px;">\n            <button class="favorite-button ${isFavorite(event) ? "is-active" : ""}" type="button" aria-label="${isFavorite(event) ? "お気に入り解除" : "お気に入り登録"}" title="${isFavorite(event) ? "お気に入り解除" : "お気に入り登録"}" data-favorite-id="${escapeHtml(event.favoriteId)}" aria-pressed="${isFavorite(event) ? "true" : "false"}">${isFavorite(event) ? "★" : "☆"}</button>\n            <div class="status ${status.key}">${status.label}</div>\n          </div>
           </div>
           <div class="meta">
             <span class="chip">${escapeHtml(formatDateRange(event))}</span>
@@ -702,6 +740,16 @@ function toggleFavoriteById(favoriteId) {
     els.dateFilter.addEventListener("change", render);
     els.locationFilter.addEventListener("change", render);
     els.favoriteOnlyFilter.addEventListener("change", render);
+
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest(".favorite-button");
+      if (!button) return;
+
+      const favoriteId = button.dataset.favoriteId;
+      if (!favoriteId) return;
+
+      toggleFavoriteById(favoriteId);
+    });
 
     init().catch(err => {
       console.error(err);
