@@ -85,18 +85,94 @@
     }
     .controls{
       display:grid;
-      grid-template-columns:repeat(4, minmax(0, 1fr));
-      gap:10px;
+      gap:14px;
       margin:18px 0 16px;
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,0.38);
+      border:1px solid rgba(125,95,65,0.14);
     }
+    .search-row{
+      display:grid;
+      grid-template-columns:minmax(0, 1fr);
+      gap:12px;
+    }
+    .filter-row{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:12px;
+    }
+    .control-field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+    }
+    .control-label{
+      font-size:0.82rem;
+      font-weight:700;
+      color:#6a5744;
+      letter-spacing:0.02em;
+    }
+    .filters-note{
+      margin:0;
+      font-size:0.84rem;
+      line-height:1.7;
+      color:#7a6652;
+    }
+    .favorite-row{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+      padding-top:2px;
+    }
+    .favorite-toggle{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      cursor:pointer;
+      color:var(--ink);
+      font-size:0.95rem;
+      line-height:1.6;
+      user-select:none;
+    }
+    .favorite-toggle input{
+      width:18px;
+      height:18px;
+      margin:0;
+      accent-color:var(--accent);
+      flex:0 0 auto;
+      box-shadow:none;
+      padding:0;
+    }
+    .favorite-toggle-text{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .favorite-toggle-star{
+      color:var(--accent);
+      font-size:1rem;
+      line-height:1;
+    }
+
     @media (max-width:900px){
-      .controls{grid-template-columns:repeat(2, minmax(0, 1fr));}
+      .filter-row{
+        grid-template-columns:1fr 1fr;
+      }
+      .filter-row .control-field:first-child{
+        grid-column:1 / -1;
+      }
     }
     @media (max-width:640px){
-      .controls{grid-template-columns:1fr;}
+      .filter-row{
+        grid-template-columns:1fr;
+      }
     }
     input, select{
       width:100%;
+      min-width:0;
       border:1px solid var(--line);
       background:rgba(255,255,255,0.7);
       color:var(--ink);
@@ -108,6 +184,11 @@
     }
     input::placeholder{
       color:#8d7a67;
+    }
+    #searchInput{
+      padding:14px 16px;
+      font-size:1rem;
+      background:rgba(255,255,255,0.82);
     }
     section{margin-top:24px;}
     .section-title{
@@ -290,17 +371,40 @@
 
   <main class="wrap">
     <div class="controls">
+  <div class="search-row">
+    <label class="control-field">
+      <span class="control-label">検索</span>
       <input id="searchInput" type="search" placeholder="企画名・場所・主催・説明で検索" />
+    </label>
+  </div>
+  <div class="filter-row">
+    <label class="control-field">
+      <span class="control-label">カテゴリ</span>
       <select id="categoryFilter">
         <option value="">すべてのカテゴリ</option>
       </select>
+    </label>
+    <label class="control-field">
+      <span class="control-label">日時</span>
       <select id="dateFilter">
         <option value="">すべての日時</option>
       </select>
+    </label>
+    <label class="control-field">
+      <span class="control-label">場所</span>
       <select id="locationFilter">
         <option value="">すべての場所</option>
       </select>
-    </div>
+    </label>
+  </div>
+  <div class="favorite-row">
+    <label class="favorite-toggle" for="favoriteOnlyFilter">
+      <input id="favoriteOnlyFilter" type="checkbox" />
+      <span class="favorite-toggle-text"><span class="favorite-toggle-star">★</span>お気に入りのみ表示</span>
+    </label>
+  </div>
+  <p class="filters-note">企画名・場所・主催・説明文・カテゴリ・お気に入りで絞り込めます。</p>
+</div>
 
     <section>
       <h2 class="section-title">いま開催中 <span class="badge">自動更新</span></h2>
@@ -351,10 +455,12 @@
       categoryFilter: document.getElementById("categoryFilter"),
       dateFilter: document.getElementById("dateFilter"),
       locationFilter: document.getElementById("locationFilter"),
+      favoriteOnlyFilter: document.getElementById("favoriteOnlyFilter"),
     };
 
     let rawEvents = [];
     let normalizedEvents = [];
+    const FAVORITES_STORAGE_KEY = "tohogasshuku_favorites_v1";
     let campStartDate = "2026/08/20";
 
     function resolveRealDate(dayLabel) {
@@ -408,6 +514,7 @@
       const start_time = event.start_time ?? event.開始 ?? event.開始時刻 ?? event.start ?? "未定";
       const end_time = event.end_time ?? event.終了 ?? event.終了時刻 ?? event.end ?? "未定";
       const sensitiveValue = event.sensitive ?? event.センシティブ ?? event.hidden ?? false;
+      const sensitive = String(sensitiveValue).toLowerCase() === "true" || sensitiveValue === true || sensitiveValue === "TRUE";
 
       const start = parseDateTime(date, start_time);
       let end = parseDateTime(date, end_time);
@@ -415,6 +522,16 @@
       if (start && end && end < start) {
         end.setDate(end.getDate() + 1);
       }
+
+      const favoriteId = createFavoriteId({
+        sensitive,
+        title,
+        host,
+        location,
+        date,
+        start_time,
+        end_time
+      });
 
       return {
         ...event,
@@ -426,7 +543,8 @@
         date,
         start_time,
         end_time,
-        sensitive: String(sensitiveValue).toLowerCase() === "true" || sensitiveValue === true || sensitiveValue === "TRUE",
+        sensitive,
+        favoriteId,
         start,
         end,
       };
@@ -458,6 +576,44 @@
       return { key: "upcoming", label: "予定" };
     }
 
+function createFavoriteId(event) {
+  return [
+    event.sensitive ? "s" : "p",
+    event.title || "",
+    event.date || "",
+    event.start_time || "",
+    event.end_time || "",
+    event.location || "",
+    event.host || ""
+  ].join("||");
+}
+
+function getFavoriteIds() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(FAVORITES_STORAGE_KEY) || "[]");
+    return Array.isArray(stored) ? stored : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function setFavoriteIds(ids) {
+  localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify([...new Set(ids)]));
+}
+
+function isFavorite(event) {
+  return getFavoriteIds().includes(event.favoriteId);
+}
+
+function toggleFavoriteById(favoriteId) {
+  const favoriteIds = getFavoriteIds();
+  const next = favoriteIds.includes(favoriteId)
+    ? favoriteIds.filter(id => id !== favoriteId)
+    : [...favoriteIds, favoriteId];
+  setFavoriteIds(next);
+  render();
+}
+
     function matchesDateFilter(event, now) {
       const value = els.dateFilter.value;
       if (!value) return true;
@@ -480,12 +636,14 @@
       const q = els.searchInput.value.trim().toLowerCase();
       const cat = els.categoryFilter.value;
       const location = els.locationFilter.value;
+      const favoriteOnly = els.favoriteOnlyFilter.checked;
       const now = new Date();
 
       const hay = [event.title, event.location, event.host, event.summary, event.category].join(" ").toLowerCase();
       if (q && !hay.includes(q)) return false;
       if (cat && event.category !== cat) return false;
       if (location && event.location !== location) return false;
+      if (favoriteOnly && !isFavorite(event)) return false;
       if (!matchesDateFilter(event, now)) return false;
       return true;
     }
@@ -499,7 +657,7 @@
               <h3 class="title">${escapeHtml(event.title)}</h3>
               <div class="host-inline">${escapeHtml(event.host || "未記入")}</div>
             </div>
-            <div class="status ${status.key}">${status.label}</div>
+            <div style="display:flex; align-items:center; gap:10px;">\n            <button class="favorite-button ${isFavorite(event) ? "is-active" : ""}" type="button" aria-label="${isFavorite(event) ? "お気に入り解除" : "お気に入り登録"}" title="${isFavorite(event) ? "お気に入り解除" : "お気に入り登録"}" onclick="toggleFavoriteById(${JSON.stringify(event.favoriteId)})">${isFavorite(event) ? "★" : "☆"}</button>\n            <div class="status ${status.key}">${status.label}</div>\n          </div>
           </div>
           <div class="meta">
             <span class="chip">${escapeHtml(formatDateRange(event))}</span>
@@ -617,6 +775,7 @@
     els.categoryFilter.addEventListener("change", render);
     els.dateFilter.addEventListener("change", render);
     els.locationFilter.addEventListener("change", render);
+    els.favoriteOnlyFilter.addEventListener("change", render);
 
     const secretCharacter = document.getElementById("secretCharacter");
     const secretCharacterImg = document.getElementById("secretCharacterImg");
